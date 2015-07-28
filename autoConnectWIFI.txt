@@ -1,0 +1,67 @@
+private void autoConnectWIFI(final String ssid, final String password) {
+        boolean bRet1;
+	WifiManager wifiManager;
+	String networkSSID;
+	String networkPass;
+		wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		bRet1 = wifiManager.setWifiEnabled(true);
+		// add network
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+
+				try {
+					while (bRet1) {
+						Log.e("enter thread!!", "enter thread!!");
+						Thread.sleep(100);
+						if (wifiManager.getWifiState() == wifiManager.WIFI_STATE_ENABLED) {
+							Log.e("WIFI_STATE_ENABLED!!",
+									"WIFI_STATE_ENABLED!!");
+							Log.e("getWifiState--1", "wifiState : "
+									+ wifiManager.getWifiState());
+
+							List scanResultList = wifiManager.getScanResults();
+							for (int i = 0; i < scanResultList.size(); i++) {
+								ScanResult scanRet = (ScanResult) scanResultList
+										.get(i);
+								if (scanRet.SSID.equalsIgnoreCase(ssid)) // 找到
+																			// TEST
+								{
+									Log.e("getWifiState--2", "wifiState : "
+											+ wifiManager.getWifiState());
+									WifiConfiguration config = new WifiConfiguration();
+									config.SSID = "\"" + ssid + "\"";
+									config.preSharedKey = "\"" + password
+											+ "\"";
+									config.hiddenSSID = true;
+									config.allowedAuthAlgorithms
+											.set(WifiConfiguration.AuthAlgorithm.OPEN);
+									config.allowedGroupCiphers
+											.set(WifiConfiguration.GroupCipher.TKIP);
+									config.allowedKeyManagement
+											.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+									config.allowedPairwiseCiphers
+											.set(WifiConfiguration.PairwiseCipher.TKIP);
+									config.allowedProtocols
+											.set(WifiConfiguration.Protocol.WPA);
+									config.status = WifiConfiguration.Status.ENABLED;
+									int netID = wifiManager.addNetwork(config);
+									boolean bRet = wifiManager.enableNetwork(
+											netID, true);
+									Log.e("getWifiState--3", "wifiState : "
+											+ wifiManager.getWifiState());
+									break;
+								}
+							}
+
+							break;
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+
+	}
